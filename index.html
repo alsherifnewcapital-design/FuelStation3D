@@ -40,6 +40,11 @@ textarea{min-height:85px;resize:vertical}
 .message{padding:10px;border-radius:9px;margin:10px 0;background:#233846;color:var(--gold)}
 .report{background:#203744;border:1px solid #355564;padding:12px;border-radius:12px;margin:10px 0;overflow-wrap:anywhere}
 .report p{margin:5px 0}
+.part-row{background:#203744;border:1px solid #355564;border-radius:10px;padding:10px;margin:8px 0}
+.part-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
+.part-fields label{font-size:13px;margin:4px 0}
+.part-row .remove-part{margin-top:8px;background:#a63838;padding:8px 10px}
+@media(max-width:520px){.part-fields{grid-template-columns:1fr 1fr}.part-fields .part-name{grid-column:1/-1}}
 .report .reporthead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-block;background:#1769aa;padding:3px 9px;border-radius:30px;font-size:13px}
 .empty{color:var(--muted);text-align:center;padding:20px}
@@ -117,8 +122,17 @@ small,.muted{color:var(--muted)}
             <textarea id="faultCause" name="faultCause" maxlength="1500" placeholder="اكتب سبب المشكلة إن كان معروفًا"></textarea>
           </div>
           <div class="full">
-            <label for="spareParts">قطع الغيار المستخدمة</label>
-            <textarea id="spareParts" name="spareParts" maxlength="1500" placeholder="اسم القطعة والكمية، أو اكتب: لا توجد"></textarea>
+            <label>قطع الغيار المستخدمة</label>
+            <p class="muted">أضف كل قطعة مع الكمية وسعر القطعة بالريال. اترك القائمة فارغة إذا لم تُستخدم قطع غيار.</p>
+            <div id="partsContainer"></div>
+            <div class="actions" style="margin-top:8px">
+              <button type="button" id="addPart" class="secondary">➕ إضافة قطعة غيار</button>
+            </div>
+            <div class="message" style="display:grid;gap:8px">
+              <div style="display:flex;justify-content:space-between;gap:8px"><span>المجموع قبل الضريبة</span><strong><span id="partsSubtotal">0.00</span> ريال</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:8px"><span>ضريبة القيمة المضافة (15%)</span><strong><span id="partsVat">0.00</span> ريال</strong></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid #456;padding-top:8px"><strong>الإجمالي شامل الضريبة</strong><strong><span id="partsTotal">0.00</span> ريال</strong></div>
+            </div>
           </div>
           <div class="full">
             <label for="repairAction">الإجراء المتخذ *</label>
@@ -282,7 +296,18 @@ function renderReports(){
     addText(card,'p','تاريخ الصيانة: '+(report.date||'غير محدد'));
     addText(card,'p','نوع العطل: '+(report.fault||'—'));
     addText(card,'p','سبب المشكلة: '+(report.cause||'—'));
-    addText(card,'p','قطع الغيار: '+(report.parts||'—'));
+    if(Array.isArray(report.partsItems)&&report.partsItems.length){
+      addText(card,'p','قطع الغيار المستخدمة:');
+      report.partsItems.forEach(part=>addText(card,'p','• '+part.name+' — الكمية: '+part.quantity+' — سعر القطعة: '+Number(part.price).toFixed(2)+' ريال — الإجمالي: '+(Number(part.quantity)*Number(part.price)).toFixed(2)+' ريال'));
+      const subtotal=Number(report.partsSubtotal ?? report.partsTotal ?? 0);
+      const vat=Number(report.partsVat ?? subtotal*0.15);
+      const totalWithVat=Number(report.partsTotalWithVat ?? subtotal+vat);
+      addText(card,'p','المجموع قبل الضريبة: '+subtotal.toFixed(2)+' ريال');
+      addText(card,'p','ضريبة القيمة المضافة (15%): '+vat.toFixed(2)+' ريال');
+      addText(card,'p','الإجمالي شامل الضريبة: '+totalWithVat.toFixed(2)+' ريال');
+    }else{
+      addText(card,'p','قطع الغيار: '+(report.parts||'لا توجد'));
+    }
     addText(card,'p','الإجراء المتخذ: '+(report.action||'—'));
     addText(card,'p','اسم الفني: '+(report.technician||'—'));
     addText(card,'p','ملاحظات: '+(report.notes||'—'));
@@ -301,6 +326,42 @@ function setMessage(message){
   $('saveMessage').textContent=message;
   $('saveMessage').hidden=false;
 }
+let partRowCounter=0;
+function updatePartsTotal(){
+  let total=0;
+  document.querySelectorAll('.part-row').forEach(row=>{
+    const quantity=Math.max(0,Number(row.querySelector('.part-quantity').value)||0);
+    const price=Math.max(0,Number(row.querySelector('.part-price').value)||0);
+    const line=quantity*price;
+    row.querySelector('.part-line-total').textContent=line.toFixed(2);
+    total+=line;
+  });
+  const vat=total*0.15;
+  const totalWithVat=total+vat;
+  $('partsSubtotal').textContent=total.toFixed(2);
+  $('partsVat').textContent=vat.toFixed(2);
+  $('partsTotal').textContent=totalWithVat.toFixed(2);
+  return {subtotal:total,vat,totalWithVat};
+}
+function addPartRow(name='',quantity='1',price='0'){
+  partRowCounter++;
+  const row=document.createElement('div');row.className='part-row';
+  const fields=document.createElement('div');fields.className='part-fields';
+  const nameWrap=document.createElement('div');nameWrap.className='part-name';
+  addText(nameWrap,'label','اسم القطعة');
+  const nameInput=document.createElement('input');nameInput.type='text';nameInput.className='part-name-input';nameInput.maxLength=120;nameInput.placeholder='مثال: بلف بريك واي';nameInput.value=name;nameInput.setAttribute('aria-label','اسم قطعة الغيار');nameWrap.appendChild(nameInput);
+  const qtyWrap=document.createElement('div');addText(qtyWrap,'label','الكمية');
+  const qtyInput=document.createElement('input');qtyInput.type='number';qtyInput.className='part-quantity';qtyInput.min='0.01';qtyInput.step='any';qtyInput.inputMode='decimal';qtyInput.value=quantity;qtyInput.setAttribute('aria-label','كمية قطعة الغيار');qtyWrap.appendChild(qtyInput);
+  const priceWrap=document.createElement('div');addText(priceWrap,'label','سعر القطعة (ريال)');
+  const priceInput=document.createElement('input');priceInput.type='number';priceInput.className='part-price';priceInput.min='0';priceInput.step='0.01';priceInput.inputMode='decimal';priceInput.value=price;priceInput.setAttribute('aria-label','سعر قطعة الغيار');priceWrap.appendChild(priceInput);
+  fields.append(nameWrap,qtyWrap,priceWrap);row.appendChild(fields);
+  const line=document.createElement('p');line.className='muted';line.append('إجمالي القطعة: ');const lineTotal=document.createElement('strong');lineTotal.className='part-line-total';lineTotal.textContent='0.00';line.appendChild(lineTotal);line.append(' ريال');row.appendChild(line);
+  const remove=document.createElement('button');remove.type='button';remove.className='remove-part';remove.textContent='حذف القطعة';remove.addEventListener('click',()=>{row.remove();updatePartsTotal();});row.appendChild(remove);
+  [qtyInput,priceInput].forEach(input=>input.addEventListener('input',updatePartsTotal));
+  $('partsContainer').appendChild(row);updatePartsTotal();
+}
+$('addPart').addEventListener('click',()=>addPartRow());
+
 $('reportForm').addEventListener('submit',event=>{
   event.preventDefault();
   const report={
@@ -310,7 +371,16 @@ $('reportForm').addEventListener('submit',event=>{
     fault:$('faultType').value.trim(),
     date:$('repairDate').value,
     cause:$('faultCause').value.trim(),
-    parts:$('spareParts').value.trim(),
+    partsItems:Array.from(document.querySelectorAll('.part-row')).map(row=>({
+      name:row.querySelector('.part-name-input').value.trim(),
+      quantity:Number(row.querySelector('.part-quantity').value)||0,
+      price:Number(row.querySelector('.part-price').value)||0
+    })).filter(part=>part.name&&part.quantity>0),
+    partsSubtotal:updatePartsTotal().subtotal,
+    partsVat:updatePartsTotal().vat,
+    partsTotalWithVat:updatePartsTotal().totalWithVat,
+    partsTotal:updatePartsTotal().totalWithVat,
+    parts:Array.from(document.querySelectorAll('.part-row')).map(row=>row.querySelector('.part-name-input').value.trim()).filter(Boolean).join('، '),
     action:$('repairAction').value.trim(),
     result:$('testResult').value,
     technician:$('technician').value.trim(),
@@ -327,6 +397,7 @@ $('reportForm').addEventListener('submit',event=>{
     return;
   }
   $('reportForm').reset();
+  $('partsContainer').replaceChildren();updatePartsTotal();
   $('repairDate').value=new Date().toLocaleDateString('en-CA');
   setMessage('تم حفظ تقرير الصيانة بنجاح على هذا الجهاز ✅');
   renderReports();
