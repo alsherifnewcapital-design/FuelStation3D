@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>FuelStation3D | محاكي صيانة محطة الوقود</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#101820;color:#fff;font-family:Arial,sans-serif;text-align:center}
+header{background:#172b38;padding:14px}
+h2{margin:4px;color:#55e6a5}
+#stats{display:flex;justify-content:space-around;gap:8px;padding:12px}
+.stat{background:#233846;padding:10px;border-radius:10px;flex:1}
+canvas{display:block;width:100%;max-width:700px;margin:auto;background:#b7c8c4;touch-action:none}
+#mission{padding:12px;color:#ffe082}
+.controls{display:grid;grid-template-columns:repeat(3,75px);justify-content:center;gap:8px;padding:12px}
+button{background:#197b62;color:white;border:0;border-radius:12px;padding:14px 8px;font-size:17px;font-weight:bold;touch-action:manipulation}
+button:active{background:#35b58b}
+#actions{display:flex;justify-content:center;gap:12px;padding:8px}
+small{color:#b7cbd5}
+</style>
+</head>
+<body>
+<header>
+<h2>⛽ FuelStation3D</h2>
+<div>محاكي صيانة محطات الوقود</div>
+</header>
+<div id="stats">
+<div class="stat">الرصيد<br><b id="money">2350</b> ريال</div>
+<div class="stat">المهمة<br><b id="status">غير مكتملة</b></div>
+</div>
+<div id="mission">المهمة: تحرّك نحو المضخة رقم 1 واضغط إصلاح</div>
+<canvas id="game" width="700" height="440"></canvas>
+<div class="controls">
+<div></div><button id="up">⬆️</button><div></div>
+<button id="left">⬅️</button><button id="down">⬇️</button><button id="right">➡️</button>
+</div>
+<div id="actions">
+<button id="repair">🔧 إصلاح المضخة</button>
+<button id="reset">إعادة اللعبة</button>
+</div>
+<small>نسخة تجريبية — استخدم الأزرار للتحرك وإصلاح المضخة.</small>
+<script>
+const c=document.getElementById('game'),ctx=c.getContext('2d');
+let player={x:350,y:340},money=2350,fixed=false;
+const pump={x:490,y:220};
+function draw(){
+ctx.clearRect(0,0,700,440);
+ctx.fillStyle='#b9c9c5';ctx.fillRect(0,0,700,440);
+// sky and station
+ctx.fillStyle='#dce8e5';ctx.fillRect(0,0,700,155);
+ctx.fillStyle='#e5e9e7';ctx.fillRect(45,55,610,160);
+ctx.fillStyle='#e53935';ctx.fillRect(35,45,630,28);
+ctx.fillStyle='#fff';ctx.font='bold 23px Arial';ctx.textAlign='center';
+ctx.fillText('FUEL STATION',350,36);
+ctx.fillStyle='#51656b';ctx.fillRect(65,85,220,115);
+ctx.fillStyle='#243e49';ctx.fillRect(77,96,196,91);
+ctx.fillStyle='#8bd3e6';ctx.fillRect(90,108,80,70);ctx.fillRect(180,108,80,70);
+// ground
+ctx.fillStyle='#68777a';ctx.fillRect(0,220,700,220);
+ctx.fillStyle='#e4d9a3';
+for(let x=15;x<700;x+=100)ctx.fillRect(x,310,55,5);
+// pump shadow
+ctx.fillStyle='#39464a';ctx.fillRect(pump.x-27,pump.y+40,65,8);
+// pump
+ctx.fillStyle=fixed?'#24a878':'#e84949';ctx.fillRect(pump.x-22,pump.y-25,48,66);
+ctx.fillStyle='#f5f5f5';ctx.fillRect(pump.x-14,pump.y-16,32,20);
+ctx.fillStyle='#17232b';ctx.font='bold 13px Arial';ctx.fillText('P1',pump.x+1,pump.y-2);
+ctx.strokeStyle='#eee';ctx.lineWidth=5;ctx.beginPath();
+ctx.moveTo(pump.x+24,pump.y-5);ctx.quadraticCurveTo(pump.x+52,pump.y+5,pump.x+37,pump.y+31);ctx.stroke();
+ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.fillText(fixed?'تم الإصلاح':'عطل!',pump.x+1,pump.y+61);
+// player
+ctx.fillStyle='#1b2730';ctx.beginPath();ctx.ellipse(player.x,player.y+17,17,7,0,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#f1bd8b';ctx.beginPath();ctx.arc(player.x,player.y-15,11,0,Math.PI*2);ctx.fill();
+ctx.fillStyle='#1769aa';ctx.fillRect(player.x-12,player.y-4,24,27);
+ctx.fillStyle='#182b3b';ctx.fillRect(player.x-11,player.y+22,8,15);ctx.fillRect(player.x+3,player.y+22,8,15);
+ctx.fillStyle='#fff';ctx.font='13px Arial';ctx.fillText('الفني',player.x,player.y+51);
+}
+function move(dx,dy){player.x=Math.max(20,Math.min(680,player.x+dx));player.y=Math.max(120,Math.min(400,player.y+dy));draw();}
+[['up',0,-12],['down',0,12],['left',-12,0],['right',12,0]].forEach(([id,dx,dy])=>{
+const b=document.getElementById(id);
+b.addEventListener('click',()=>move(dx,dy));
+b.addEventListener('touchstart',e=>{e.preventDefault();move(dx,dy)},{passive:false});
+});
+document.getElementById('repair').onclick=()=>{
+if(fixed){document.getElementById('mission').textContent='المهمة مكتملة بالفعل!';return;}
+const d=Math.hypot(player.x-pump.x,player.y-pump.y);
+if(d>100){document.getElementById('mission').textContent='اقترب من المضخة رقم 1 أولاً!';return;}
+fixed=true;money+=450;
+document.getElementById('money').textContent=money;
+document.getElementById('status').textContent='مكتملة ✅';
+document.getElementById('mission').textContent='أحسنت! أصلحت المضخة وحصلت على 450 ريال.';
+draw();
+};
+document.getElementById('reset').onclick=()=>{
+player={x:350,y:340};money=2350;fixed=false;
+document.getElementById('money').textContent=money;
+document.getElementById('status').textContent='غير مكتملة';
+document.getElementById('mission').textContent='المهمة: تحرّك نحو المضخة رقم 1 واضغط إصلاح';
+draw();
+};
+draw();
+</script>
+</body>
+</html>
