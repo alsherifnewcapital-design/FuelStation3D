@@ -138,8 +138,7 @@ jobs:
 
                   if (savedInstanceState == null) {
                       webView.loadUrl(
-                          "https://alsherii.github.io/FuelStation3D/"
-                      );
+                          "https://alsherifnewcapital-design.github.io/FuelStation3D/"
                   } else {
                       webView.restoreState(savedInstanceState);
                   }
