@@ -26,7 +26,7 @@ h3{margin:0 0 8px}
 .stat strong{display:block;font-size:22px;color:var(--gold)}
 #mission{padding:10px;background:#253a42;border-radius:10px;color:var(--gold);margin:10px 0;text-align:center}
 canvas{display:block;width:100%;height:auto;max-width:700px;margin:auto;background:#b7c8c4;border-radius:10px;touch-action:none}
-.controls{display:grid;grid-template-columns:repeat(3, minmax(55px,75px));justify-content:center;gap:8px;padding:12px 0}
+.controls{display:grid;grid-template-columns:repeat(3,minmax(55px,75px));justify-content:center;gap:8px;padding:12px 0}
 .controls button{font-size:20px;padding:10px}
 .actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 .actions button{flex:1;min-width:140px}
@@ -40,10 +40,15 @@ textarea{min-height:85px;resize:vertical}
 .message{padding:10px;border-radius:9px;margin:10px 0;background:#233846;color:var(--gold)}
 .report{background:#203744;border:1px solid #355564;padding:12px;border-radius:12px;margin:10px 0;overflow-wrap:anywhere}
 .report p{margin:5px 0}
-.part-row{background:#203744;border:1px solid #355564;border-radius:10px;padding:10px;margin:8px 0}
+.part-row{background:#203744;border:1px solid #456574;border-radius:12px;padding:12px;margin:10px 0}
 .part-fields{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px}
 .part-fields label{font-size:13px;margin:4px 0}
 .part-row .remove-part{margin-top:8px;background:#a63838;padding:8px 10px}
+.part-line{background:#172b38;padding:8px 10px;border-radius:8px;margin:10px 0 0}
+.totals{display:grid;gap:9px;background:#233846;border:1px solid #456574;border-radius:12px;padding:12px;margin-top:12px}
+.total-line{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.total-line.final{border-top:1px solid #78909c;padding-top:10px;color:var(--mint);font-size:18px}
+.money{white-space:nowrap;font-variant-numeric:tabular-nums}
 @media(max-width:520px){.part-fields{grid-template-columns:1fr 1fr}.part-fields .part-name{grid-column:1/-1}}
 .report .reporthead{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .pill{display:inline-block;background:#1769aa;padding:3px 9px;border-radius:30px;font-size:13px}
@@ -54,372 +59,130 @@ small,.muted{color:var(--muted)}
 </style>
 </head>
 <body>
-<header>
-  <h1>⛽ FuelStation3D</h1>
-  <p>محطتي للصيانة — محاكي وسجل صيانة محطات الوقود</p>
-</header>
+<header><h1>⛽ FuelStation3D</h1><p>محطتي للصيانة — محاكي وسجل صيانة محطات الوقود</p></header>
 <main>
   <div class="tabs" role="tablist" aria-label="أقسام التطبيق">
     <button class="tab active" id="tabGame" type="button" role="tab" aria-selected="true">🎮 محاكاة الصيانة</button>
     <button class="tab" id="tabRecords" type="button" role="tab" aria-selected="false">🧾 سجل الصيانة</button>
   </div>
-
   <section id="gameSection">
-    <div class="stats">
-      <div class="stat">الرصيد التجريبي<strong><span id="money">2350</span> ريال</strong></div>
-      <div class="stat">حالة المهمة<strong id="status">غير مكتملة</strong></div>
-    </div>
+    <div class="stats"><div class="stat">الرصيد التجريبي<strong><span id="money">2350</span> ريال</strong></div><div class="stat">حالة المهمة<strong id="status">غير مكتملة</strong></div></div>
     <div id="mission">المهمة: تحرّك نحو المضخة رقم 1 ثم اضغط إصلاح.</div>
-    <div class="panel">
-      <h2>منطقة المحطة التجريبية</h2>
-      <canvas id="game" width="700" height="440" aria-label="رسم تجريبي لمحطة الوقود"></canvas>
-      <div class="controls">
-        <div></div><button id="up" aria-label="تحرك للأعلى">⬆️</button><div></div>
-        <button id="left" aria-label="تحرك لليسار">⬅️</button><button id="down" aria-label="تحرك للأسفل">⬇️</button><button id="right" aria-label="تحرك لليمين">➡️</button>
-      </div>
-      <div class="actions">
-        <button id="repair" type="button">🔧 إصلاح المضخة</button>
-        <button id="reset" class="secondary" type="button">إعادة اللعبة</button>
-      </div>
+    <div class="panel"><h2>منطقة المحطة التجريبية</h2><canvas id="game" width="700" height="440" aria-label="رسم تجريبي لمحطة الوقود"></canvas>
+      <div class="controls"><div></div><button id="up" aria-label="تحرك للأعلى">⬆️</button><div></div><button id="left" aria-label="تحرك لليسار">⬅️</button><button id="down" aria-label="تحرك للأسفل">⬇️</button><button id="right" aria-label="تحرك لليمين">➡️</button></div>
+      <div class="actions"><button id="repair" type="button">🔧 إصلاح المضخة</button><button id="reset" class="secondary" type="button">إعادة اللعبة</button></div>
       <p class="muted">هذه محاكاة تعليمية بسيطة وليست تحكمًا بمضخة حقيقية.</p>
     </div>
-    <div class="panel">
-      <h2>تسجيل تقرير للمهمة</h2>
-      <p>بعد إكمال المهمة، افتح سجل الصيانة لتسجيل تفاصيل العمل والاختبار.</p>
-      <button type="button" id="openRecords">🧾 فتح سجل الصيانة</button>
-    </div>
+    <div class="panel"><h2>تسجيل تقرير للمهمة</h2><p>بعد إكمال المهمة، افتح سجل الصيانة لتسجيل تفاصيل العمل والاختبار.</p><button type="button" id="openRecords">🧾 فتح سجل الصيانة</button></div>
   </section>
-
   <section id="recordsSection" hidden>
-    <div class="panel">
-      <h2>➕ تقرير صيانة جديد</h2>
+    <div class="panel"><h2>➕ تقرير صيانة جديد</h2>
       <form id="reportForm">
         <div class="grid">
-          <div>
-            <label for="stationName">اسم المحطة *</label>
-            <input id="stationName" name="stationName" maxlength="100" placeholder="مثال: محطة طريق الملك" required>
-          </div>
-          <div>
-            <label for="pumpNumber">رقم المضخة *</label>
-            <select id="pumpNumber" name="pumpNumber" required>
-              <option value="المضخة رقم 1">المضخة رقم 1</option>
-              <option value="المضخة رقم 2">المضخة رقم 2</option>
-              <option value="المضخة رقم 3">المضخة رقم 3</option>
-              <option value="المضخة رقم 4">المضخة رقم 4</option>
-              <option value="مضخة أخرى">مضخة أخرى</option>
-            </select>
-          </div>
-          <div>
-            <label for="faultType">نوع العطل *</label>
-            <input id="faultType" name="faultType" maxlength="160" placeholder="مثال: المضخة لا تضخ الوقود" required>
-          </div>
-          <div>
-            <label for="repairDate">تاريخ الصيانة *</label>
-            <input id="repairDate" name="repairDate" type="date" required>
-          </div>
+          <div><label for="stationName">اسم المحطة *</label><input id="stationName" name="stationName" maxlength="100" placeholder="مثال: محطة طريق الملك" required></div>
+          <div><label for="pumpNumber">رقم المضخة *</label><select id="pumpNumber" name="pumpNumber" required><option value="المضخة رقم 1">المضخة رقم 1</option><option value="المضخة رقم 2">المضخة رقم 2</option><option value="المضخة رقم 3">المضخة رقم 3</option><option value="المضخة رقم 4">المضخة رقم 4</option><option value="مضخة أخرى">مضخة أخرى</option></select></div>
+          <div><label for="faultType">نوع العطل *</label><input id="faultType" name="faultType" maxlength="160" placeholder="مثال: المضخة لا تضخ الوقود" required></div>
+          <div><label for="repairDate">تاريخ الصيانة *</label><input id="repairDate" name="repairDate" type="date" required></div>
+          <div class="full"><label for="faultCause">سبب المشكلة</label><textarea id="faultCause" name="faultCause" maxlength="1500" placeholder="اكتب سبب المشكلة إن كان معروفًا"></textarea></div>
           <div class="full">
-            <label for="faultCause">سبب المشكلة</label>
-            <textarea id="faultCause" name="faultCause" maxlength="1500" placeholder="اكتب سبب المشكلة إن كان معروفًا"></textarea>
-          </div>
-          <div class="full">
-            <label>قطع الغيار المستخدمة</label>
-            <p class="muted">أضف كل قطعة مع الكمية وسعر القطعة بالريال. اترك القائمة فارغة إذا لم تُستخدم قطع غيار.</p>
+            <label>قطع الغيار المستخدمة</label><p class="muted">أضف كل قطعة على حدة. أدخل الكمية وسعر القطعة بالريال، وسيتم حساب الإجماليات تلقائيًا.</p>
             <div id="partsContainer"></div>
-            <div class="actions" style="margin-top:8px">
-              <button type="button" id="addPart" class="secondary">➕ إضافة قطعة غيار</button>
-            </div>
-            <div class="message" style="display:grid;gap:8px">
-              <div style="display:flex;justify-content:space-between;gap:8px"><span>المجموع قبل الضريبة</span><strong><span id="partsSubtotal">0.00</span> ريال</strong></div>
-              <div style="display:flex;justify-content:space-between;gap:8px"><span>ضريبة القيمة المضافة (15%)</span><strong><span id="partsVat">0.00</span> ريال</strong></div>
-              <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px solid #456;padding-top:8px"><strong>الإجمالي شامل الضريبة</strong><strong><span id="partsTotal">0.00</span> ريال</strong></div>
+            <div class="actions" style="margin-top:8px"><button type="button" id="addPart" class="secondary">➕ إضافة قطعة غيار</button></div>
+            <div class="totals" aria-live="polite">
+              <div class="total-line"><span>المجموع قبل الضريبة</span><strong class="money"><span id="partsSubtotal">0.00</span> ريال</strong></div>
+              <div class="total-line"><span>ضريبة القيمة المضافة (15%)</span><strong class="money"><span id="partsVat">0.00</span> ريال</strong></div>
+              <div class="total-line final"><strong>الإجمالي شامل الضريبة</strong><strong class="money"><span id="partsTotal">0.00</span> ريال</strong></div>
             </div>
           </div>
-          <div class="full">
-            <label for="repairAction">الإجراء المتخذ *</label>
-            <textarea id="repairAction" name="repairAction" maxlength="2000" placeholder="اكتب أعمال الصيانة التي تم تنفيذها" required></textarea>
-          </div>
-          <div>
-            <label for="testResult">نتيجة الاختبار *</label>
-            <select id="testResult" name="testResult" required>
-              <option value="لم يتم الاختبار">لم يتم الاختبار</option>
-              <option value="ناجح">ناجح</option>
-              <option value="يحتاج إلى متابعة">يحتاج إلى متابعة</option>
-              <option value="خارج الخدمة">خارج الخدمة</option>
-            </select>
-          </div>
-          <div>
-            <label for="technician">اسم الفني</label>
-            <input id="technician" name="technician" maxlength="100" placeholder="اسم الفني (اختياري)">
-          </div>
-          <div class="full">
-            <label for="notes">ملاحظات إضافية</label>
-            <textarea id="notes" name="notes" maxlength="1500" placeholder="ملاحظات اختيارية"></textarea>
-          </div>
+          <div class="full"><label for="repairAction">الإجراء المتخذ *</label><textarea id="repairAction" name="repairAction" maxlength="2000" placeholder="اكتب أعمال الصيانة التي تم تنفيذها" required></textarea></div>
+          <div><label for="testResult">نتيجة الاختبار *</label><select id="testResult" name="testResult" required><option value="لم يتم الاختبار">لم يتم الاختبار</option><option value="ناجح">ناجح</option><option value="يحتاج إلى متابعة">يحتاج إلى متابعة</option><option value="خارج الخدمة">خارج الخدمة</option></select></div>
+          <div><label for="technician">اسم الفني</label><input id="technician" name="technician" maxlength="100" placeholder="اسم الفني (اختياري)"></div>
+          <div class="full"><label for="notes">ملاحظات إضافية</label><textarea id="notes" name="notes" maxlength="1500" placeholder="ملاحظات اختيارية"></textarea></div>
         </div>
-        <div class="actions" style="margin-top:14px">
-          <button type="submit">💾 حفظ التقرير</button>
-          <button type="reset" class="secondary">تفريغ الحقول</button>
-        </div>
+        <div class="actions" style="margin-top:14px"><button type="submit">💾 حفظ التقرير</button><button type="reset" class="secondary">تفريغ الحقول</button></div>
       </form>
       <div id="saveMessage" class="message" role="status" aria-live="polite" hidden></div>
     </div>
-    <div class="panel">
-      <h2>📚 التقارير المحفوظة</h2>
-      <p class="muted">التقارير محفوظة في تخزين المتصفح على هذا الجهاز. امسح بيانات المتصفح أو تغيّر المتصفح قد يؤدي إلى فقدانها؛ صدّر نسخة احتياطية بانتظام.</p>
-      <div class="actions">
-        <button type="button" id="exportReports" class="secondary">⬇️ تصدير نسخة احتياطية</button>
-        <button type="button" id="clearReports" class="danger">حذف كل التقارير</button>
-      </div>
+    <div class="panel"><h2>📚 التقارير المحفوظة</h2><p class="muted">التقارير محفوظة في متصفح هذا الجهاز فقط. صدّر نسخة احتياطية بانتظام.</p>
+      <div class="actions"><button type="button" id="exportReports" class="secondary">⬇️ تصدير نسخة احتياطية</button><button type="button" id="clearReports" class="danger">حذف كل التقارير</button></div>
       <div id="reportsList"></div>
     </div>
   </section>
   <footer class="muted" style="text-align:center;padding:12px 4px"><small>نسخة أولية مجانية • لا تحتاج مكتبات خارجية أو اتصالًا بالخادم</small></footer>
 </main>
-
 <script>
 'use strict';
-const $ = id => document.getElementById(id);
-
-/* لعبة المحاكاة */
-const canvas = $('game');
-const ctx = canvas.getContext('2d');
-let player = {x:350,y:340};
-let money = 2350;
-let fixed = false;
-const pump = {x:490,y:220};
-
+const $=id=>document.getElementById(id);
+/* محاكاة اللعبة */
+const canvas=$('game'),ctx=canvas.getContext('2d');
+let player={x:350,y:340},money=2350,fixed=false;
+const pump={x:490,y:220};
 function draw(){
-  ctx.clearRect(0,0,700,440);
-  ctx.fillStyle='#b9c9c5';ctx.fillRect(0,0,700,440);
-  ctx.fillStyle='#dce8e5';ctx.fillRect(0,0,700,155);
-  ctx.fillStyle='#e5e9e7';ctx.fillRect(45,55,610,160);
-  ctx.fillStyle='#e53935';ctx.fillRect(35,45,630,28);
-  ctx.fillStyle='#fff';ctx.font='bold 23px Arial';ctx.textAlign='center';
-  ctx.fillText('FUEL STATION',350,36);
-  ctx.fillStyle='#51656b';ctx.fillRect(65,85,220,115);
-  ctx.fillStyle='#243e49';ctx.fillRect(77,96,196,91);
-  ctx.fillStyle='#8bd3e6';ctx.fillRect(90,108,80,70);ctx.fillRect(180,108,80,70);
-  ctx.fillStyle='#68777a';ctx.fillRect(0,220,700,220);
-  ctx.fillStyle='#e4d9a3';
-  for(let x=15;x<700;x+=100)ctx.fillRect(x,310,55,5);
-  ctx.fillStyle='#39464a';ctx.fillRect(pump.x-27,pump.y+40,65,8);
-  ctx.fillStyle=fixed?'#24a878':'#e84949';ctx.fillRect(pump.x-22,pump.y-25,48,66);
-  ctx.fillStyle='#f5f5f5';ctx.fillRect(pump.x-14,pump.y-16,32,20);
-  ctx.fillStyle='#17232b';ctx.font='bold 13px Arial';ctx.fillText('P1',pump.x+1,pump.y-2);
-  ctx.strokeStyle='#eee';ctx.lineWidth=5;ctx.beginPath();
-  ctx.moveTo(pump.x+24,pump.y-5);ctx.quadraticCurveTo(pump.x+52,pump.y+5,pump.x+37,pump.y+31);ctx.stroke();
-  ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.fillText(fixed?'تم الإصلاح':'عطل!',pump.x+1,pump.y+61);
-  ctx.fillStyle='#1b2730';ctx.beginPath();ctx.ellipse(player.x,player.y+17,17,7,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#f1bd8b';ctx.beginPath();ctx.arc(player.x,player.y-15,11,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#1769aa';ctx.fillRect(player.x-12,player.y-4,24,27);
-  ctx.fillStyle='#182b3b';ctx.fillRect(player.x-11,player.y+22,8,15);ctx.fillRect(player.x+3,player.y+22,8,15);
-  ctx.fillStyle='#fff';ctx.font='13px Arial';ctx.fillText('الفني',player.x,player.y+51);
+ ctx.clearRect(0,0,700,440);ctx.fillStyle='#b9c9c5';ctx.fillRect(0,0,700,440);ctx.fillStyle='#dce8e5';ctx.fillRect(0,0,700,155);ctx.fillStyle='#e5e9e7';ctx.fillRect(45,55,610,160);ctx.fillStyle='#e53935';ctx.fillRect(35,45,630,28);ctx.fillStyle='#fff';ctx.font='bold 23px Arial';ctx.textAlign='center';ctx.fillText('FUEL STATION',350,36);ctx.fillStyle='#51656b';ctx.fillRect(65,85,220,115);ctx.fillStyle='#243e49';ctx.fillRect(77,96,196,91);ctx.fillStyle='#8bd3e6';ctx.fillRect(90,108,80,70);ctx.fillRect(180,108,80,70);ctx.fillStyle='#68777a';ctx.fillRect(0,220,700,220);ctx.fillStyle='#e4d9a3';for(let x=15;x<700;x+=100)ctx.fillRect(x,310,55,5);ctx.fillStyle='#39464a';ctx.fillRect(pump.x-27,pump.y+40,65,8);ctx.fillStyle=fixed?'#24a878':'#e84949';ctx.fillRect(pump.x-22,pump.y-25,48,66);ctx.fillStyle='#f5f5f5';ctx.fillRect(pump.x-14,pump.y-16,32,20);ctx.fillStyle='#17232b';ctx.font='bold 13px Arial';ctx.fillText('P1',pump.x+1,pump.y-2);ctx.strokeStyle='#eee';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(pump.x+24,pump.y-5);ctx.quadraticCurveTo(pump.x+52,pump.y+5,pump.x+37,pump.y+31);ctx.stroke();ctx.fillStyle='#fff';ctx.font='bold 16px Arial';ctx.fillText(fixed?'تم الإصلاح':'عطل!',pump.x+1,pump.y+61);ctx.fillStyle='#1b2730';ctx.beginPath();ctx.ellipse(player.x,player.y+17,17,7,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#f1bd8b';ctx.beginPath();ctx.arc(player.x,player.y-15,11,0,Math.PI*2);ctx.fill();ctx.fillStyle='#1769aa';ctx.fillRect(player.x-12,player.y-4,24,27);ctx.fillStyle='#182b3b';ctx.fillRect(player.x-11,player.y+22,8,15);ctx.fillRect(player.x+3,player.y+22,8,15);ctx.fillStyle='#fff';ctx.font='13px Arial';ctx.fillText('الفني',player.x,player.y+51);
 }
-function move(dx,dy){
-  player.x=Math.max(20,Math.min(680,player.x+dx));
-  player.y=Math.max(120,Math.min(400,player.y+dy));
-  draw();
-}
-[['up',0,-12],['down',0,12],['left',-12,0],['right',12,0]].forEach(([id,dx,dy])=>{
-  const button=$(id);
-  button.addEventListener('click',()=>move(dx,dy));
-  button.addEventListener('touchstart',e=>{e.preventDefault();move(dx,dy);},{passive:false});
-});
-$('repair').addEventListener('click',()=>{
-  if(fixed){$('mission').textContent='المهمة مكتملة بالفعل!';return;}
-  const distance=Math.hypot(player.x-pump.x,player.y-pump.y);
-  if(distance>100){$('mission').textContent='اقترب من المضخة رقم 1 أولًا!';return;}
-  fixed=true;money+=450;
-  $('money').textContent=money;
-  $('status').textContent='مكتملة ✅';
-  $('mission').textContent='أحسنت! أصلحت المضخة في المحاكاة وحصلت على 450 ريال تجريبي.';
-  draw();
-});
-$('reset').addEventListener('click',()=>{
-  player={x:350,y:340};money=2350;fixed=false;
-  $('money').textContent=money;$('status').textContent='غير مكتملة';
-  $('mission').textContent='المهمة: تحرّك نحو المضخة رقم 1 ثم اضغط إصلاح.';
-  draw();
-});
-
-/* التنقل بين القسمين */
-function showSection(which){
-  const game=which==='game';
-  $('gameSection').hidden=!game;
-  $('recordsSection').hidden=game;
-  $('tabGame').classList.toggle('active',game);
-  $('tabRecords').classList.toggle('active',!game);
-  $('tabGame').setAttribute('aria-selected',String(game));
-  $('tabRecords').setAttribute('aria-selected',String(!game));
-  if(!game)renderReports();
-}
-$('tabGame').addEventListener('click',()=>showSection('game'));
-$('tabRecords').addEventListener('click',()=>showSection('records'));
-$('openRecords').addEventListener('click',()=>showSection('records'));
-
-/* سجل الصيانة المحلي */
-const STORAGE_KEY='fuelStation3D_maintenance_reports_v1';
-let reports=[];
-function loadReports(){
-  try{
-    const data=localStorage.getItem(STORAGE_KEY);
-    reports=data?JSON.parse(data):[];
-    if(!Array.isArray(reports))reports=[];
-  }catch(error){reports=[];}
-}
-function persistReports(){
-  try{
-    localStorage.setItem(STORAGE_KEY,JSON.stringify(reports));
-    return true;
-  }catch(error){return false;}
-}
-function addText(parent,tag,text,className){
-  const node=document.createElement(tag);
-  node.textContent=text;
-  if(className)node.className=className;
-  parent.appendChild(node);
-  return node;
-}
+function move(dx,dy){player.x=Math.max(20,Math.min(680,player.x+dx));player.y=Math.max(120,Math.min(400,player.y+dy));draw();}
+[['up',0,-12],['down',0,12],['left',-12,0],['right',12,0]].forEach(([id,dx,dy])=>{const b=$(id);b.addEventListener('click',()=>move(dx,dy));b.addEventListener('touchstart',e=>{e.preventDefault();move(dx,dy);},{passive:false});});
+$('repair').addEventListener('click',()=>{if(fixed){$('mission').textContent='المهمة مكتملة بالفعل!';return;}if(Math.hypot(player.x-pump.x,player.y-pump.y)>100){$('mission').textContent='اقترب من المضخة رقم 1 أولًا!';return;}fixed=true;money+=450;$('money').textContent=money;$('status').textContent='مكتملة ✅';$('mission').textContent='أحسنت! أصلحت المضخة في المحاكاة وحصلت على 450 ريال تجريبي.';draw();});
+$('reset').addEventListener('click',()=>{player={x:350,y:340};money=2350;fixed=false;$('money').textContent=money;$('status').textContent='غير مكتملة';$('mission').textContent='المهمة: تحرّك نحو المضخة رقم 1 ثم اضغط إصلاح.';draw();});
+function showSection(which){const game=which==='game';$('gameSection').hidden=!game;$('recordsSection').hidden=game;$('tabGame').classList.toggle('active',game);$('tabRecords').classList.toggle('active',!game);$('tabGame').setAttribute('aria-selected',String(game));$('tabRecords').setAttribute('aria-selected',String(!game));if(!game)renderReports();}
+$('tabGame').addEventListener('click',()=>showSection('game'));$('tabRecords').addEventListener('click',()=>showSection('records'));$('openRecords').addEventListener('click',()=>showSection('records'));
+const STORAGE_KEY='fuelStation3D_maintenance_reports_v1';let reports=[];
+function loadReports(){try{const data=localStorage.getItem(STORAGE_KEY);reports=data?JSON.parse(data):[];if(!Array.isArray(reports))reports=[];}catch(e){reports=[];}}
+function persistReports(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(reports));return true;}catch(e){return false;}}
+function addText(parent,tag,text,className){const n=document.createElement(tag);n.textContent=text;if(className)n.className=className;parent.appendChild(n);return n;}
+function moneyText(value){return (Number(value)||0).toFixed(2)+' ريال';}
 function renderReports(){
-  const list=$('reportsList');
-  list.replaceChildren();
-  if(!reports.length){
-    addText(list,'p','لا توجد تقارير محفوظة حتى الآن. أضف أول تقرير من النموذج أعلاه.','empty');
-    return;
-  }
-  reports.forEach((report,index)=>{
-    const card=document.createElement('article');card.className='report';
-    const head=document.createElement('div');head.className='reporthead';
-    addText(head,'h3',(report.station||'محطة غير محددة')+' — '+(report.pump||'مضخة غير محددة'));
-    const status=addText(head,'span',report.result||'لم يتم الاختبار','pill');
-    card.appendChild(head);
-    addText(card,'p','تاريخ الصيانة: '+(report.date||'غير محدد'));
-    addText(card,'p','نوع العطل: '+(report.fault||'—'));
-    addText(card,'p','سبب المشكلة: '+(report.cause||'—'));
-    if(Array.isArray(report.partsItems)&&report.partsItems.length){
-      addText(card,'p','قطع الغيار المستخدمة:');
-      report.partsItems.forEach(part=>addText(card,'p','• '+part.name+' — الكمية: '+part.quantity+' — سعر القطعة: '+Number(part.price).toFixed(2)+' ريال — الإجمالي: '+(Number(part.quantity)*Number(part.price)).toFixed(2)+' ريال'));
-      const subtotal=Number(report.partsSubtotal ?? report.partsTotal ?? 0);
-      const vat=Number(report.partsVat ?? subtotal*0.15);
-      const totalWithVat=Number(report.partsTotalWithVat ?? subtotal+vat);
-      addText(card,'p','المجموع قبل الضريبة: '+subtotal.toFixed(2)+' ريال');
-      addText(card,'p','ضريبة القيمة المضافة (15%): '+vat.toFixed(2)+' ريال');
-      addText(card,'p','الإجمالي شامل الضريبة: '+totalWithVat.toFixed(2)+' ريال');
-    }else{
-      addText(card,'p','قطع الغيار: '+(report.parts||'لا توجد'));
-    }
-    addText(card,'p','الإجراء المتخذ: '+(report.action||'—'));
-    addText(card,'p','اسم الفني: '+(report.technician||'—'));
-    addText(card,'p','ملاحظات: '+(report.notes||'—'));
-    const remove=document.createElement('button');
-    remove.type='button';remove.className='danger';remove.textContent='حذف هذا التقرير';
-    remove.addEventListener('click',()=>{
-      if(!confirm('هل تريد حذف هذا التقرير؟'))return;
-      const old=reports;reports=reports.filter((_,i)=>i!==index);
-      if(!persistReports()){reports=old;alert('تعذر الحفظ في المتصفح.');return;}
-      renderReports();
-    });
-    card.appendChild(remove);list.appendChild(card);
-  });
+ const list=$('reportsList');list.replaceChildren();
+ if(!reports.length){addText(list,'p','لا توجد تقارير محفوظة حتى الآن. أضف أول تقرير من النموذج أعلاه.','empty');return;}
+ reports.forEach((r,index)=>{
+  const card=document.createElement('article');card.className='report';const head=document.createElement('div');head.className='reporthead';addText(head,'h3',(r.station||'محطة غير محددة')+' — '+(r.pump||'مضخة غير محددة'));addText(head,'span',r.result||'لم يتم الاختبار','pill');card.appendChild(head);
+  [['تاريخ الصيانة',r.date],['نوع العطل',r.fault],['سبب المشكلة',r.cause]].forEach(([label,value])=>addText(card,'p',label+': '+(value||'—')));
+  if(Array.isArray(r.partsItems)&&r.partsItems.length){
+   addText(card,'p','قطع الغيار المستخدمة:');
+   r.partsItems.forEach(p=>addText(card,'p','• '+(p.name||'قطعة')+' — الكمية: '+p.quantity+' — سعر القطعة: '+moneyText(p.price)+' — إجمالي القطعة: '+moneyText(Number(p.quantity)*Number(p.price))));
+   const subtotal=Number(r.partsSubtotal ?? r.partsTotal ?? 0),vat=Number(r.partsVat ?? subtotal*.15),total=Number(r.partsTotalWithVat ?? subtotal+vat);
+   addText(card,'p','المجموع قبل الضريبة: '+moneyText(subtotal));addText(card,'p','ضريبة القيمة المضافة (15%): '+moneyText(vat));addText(card,'p','الإجمالي شامل الضريبة: '+moneyText(total));
+  }else addText(card,'p','قطع الغيار: '+(r.parts||'لا توجد'));
+  [['الإجراء المتخذ',r.action],['اسم الفني',r.technician],['ملاحظات',r.notes]].forEach(([label,value])=>addText(card,'p',label+': '+(value||'—')));
+  const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='حذف هذا التقرير';del.addEventListener('click',()=>{if(!confirm('هل تريد حذف هذا التقرير؟'))return;const old=reports;reports=reports.filter((_,i)=>i!==index);if(!persistReports()){reports=old;alert('تعذر الحفظ في المتصفح.');return;}renderReports();});card.appendChild(del);list.appendChild(card);
+ });
 }
-function setMessage(message){
-  $('saveMessage').textContent=message;
-  $('saveMessage').hidden=false;
-}
-let partRowCounter=0;
+function setMessage(message){$('saveMessage').textContent=message;$('saveMessage').hidden=false;}
 function updatePartsTotal(){
-  let total=0;
-  document.querySelectorAll('.part-row').forEach(row=>{
-    const quantity=Math.max(0,Number(row.querySelector('.part-quantity').value)||0);
-    const price=Math.max(0,Number(row.querySelector('.part-price').value)||0);
-    const line=quantity*price;
-    row.querySelector('.part-line-total').textContent=line.toFixed(2);
-    total+=line;
-  });
-  const vat=total*0.15;
-  const totalWithVat=total+vat;
-  $('partsSubtotal').textContent=total.toFixed(2);
-  $('partsVat').textContent=vat.toFixed(2);
-  $('partsTotal').textContent=totalWithVat.toFixed(2);
-  return {subtotal:total,vat,totalWithVat};
+ let subtotal=0;
+ document.querySelectorAll('.part-row').forEach(row=>{
+  const q=Math.max(0,Number(row.querySelector('.part-quantity').value)||0),p=Math.max(0,Number(row.querySelector('.part-price').value)||0),line=q*p;
+  row.querySelector('.part-line-total').textContent=line.toFixed(2);subtotal+=line;
+ });
+ const vat=Math.round(subtotal*.15*100)/100,total=Math.round((subtotal+vat)*100)/100;
+ $('partsSubtotal').textContent=subtotal.toFixed(2);$('partsVat').textContent=vat.toFixed(2);$('partsTotal').textContent=total.toFixed(2);
+ return {subtotal,vat,totalWithVat:total};
 }
 function addPartRow(name='',quantity='1',price='0'){
-  partRowCounter++;
-  const row=document.createElement('div');row.className='part-row';
-  const fields=document.createElement('div');fields.className='part-fields';
-  const nameWrap=document.createElement('div');nameWrap.className='part-name';
-  addText(nameWrap,'label','اسم القطعة');
-  const nameInput=document.createElement('input');nameInput.type='text';nameInput.className='part-name-input';nameInput.maxLength=120;nameInput.placeholder='مثال: بلف بريك واي';nameInput.value=name;nameInput.setAttribute('aria-label','اسم قطعة الغيار');nameWrap.appendChild(nameInput);
-  const qtyWrap=document.createElement('div');addText(qtyWrap,'label','الكمية');
-  const qtyInput=document.createElement('input');qtyInput.type='number';qtyInput.className='part-quantity';qtyInput.min='0.01';qtyInput.step='any';qtyInput.inputMode='decimal';qtyInput.value=quantity;qtyInput.setAttribute('aria-label','كمية قطعة الغيار');qtyWrap.appendChild(qtyInput);
-  const priceWrap=document.createElement('div');addText(priceWrap,'label','سعر القطعة (ريال)');
-  const priceInput=document.createElement('input');priceInput.type='number';priceInput.className='part-price';priceInput.min='0';priceInput.step='0.01';priceInput.inputMode='decimal';priceInput.value=price;priceInput.setAttribute('aria-label','سعر قطعة الغيار');priceWrap.appendChild(priceInput);
-  fields.append(nameWrap,qtyWrap,priceWrap);row.appendChild(fields);
-  const line=document.createElement('p');line.className='muted';line.append('إجمالي القطعة: ');const lineTotal=document.createElement('strong');lineTotal.className='part-line-total';lineTotal.textContent='0.00';line.appendChild(lineTotal);line.append(' ريال');row.appendChild(line);
-  const remove=document.createElement('button');remove.type='button';remove.className='remove-part';remove.textContent='حذف القطعة';remove.addEventListener('click',()=>{row.remove();updatePartsTotal();});row.appendChild(remove);
-  [qtyInput,priceInput].forEach(input=>input.addEventListener('input',updatePartsTotal));
-  $('partsContainer').appendChild(row);updatePartsTotal();
+ const row=document.createElement('div');row.className='part-row';
+ const fields=document.createElement('div');fields.className='part-fields';
+ const nw=document.createElement('div');nw.className='part-name';addText(nw,'label','اسم القطعة');const ni=document.createElement('input');ni.type='text';ni.className='part-name-input';ni.maxLength=120;ni.placeholder='مثال: بلف بريك واي';ni.value=name;ni.setAttribute('aria-label','اسم قطعة الغيار');nw.appendChild(ni);
+ const qw=document.createElement('div');addText(qw,'label','الكمية');const qi=document.createElement('input');qi.type='number';qi.className='part-quantity';qi.min='0.01';qi.step='any';qi.inputMode='decimal';qi.value=quantity;qi.setAttribute('aria-label','كمية قطعة الغيار');qw.appendChild(qi);
+ const pw=document.createElement('div');addText(pw,'label','سعر القطعة (ريال)');const pi=document.createElement('input');pi.type='number';pi.className='part-price';pi.min='0';pi.step='0.01';pi.inputMode='decimal';pi.value=price;pi.setAttribute('aria-label','سعر قطعة الغيار');pw.appendChild(pi);
+ fields.append(nw,qw,pw);row.appendChild(fields);
+ const line=document.createElement('p');line.className='part-line';line.append('إجمالي القطعة: ');const lineTotal=document.createElement('strong');lineTotal.className='part-line-total';lineTotal.textContent='0.00';line.appendChild(lineTotal);line.append(' ريال');row.appendChild(line);
+ const remove=document.createElement('button');remove.type='button';remove.className='remove-part';remove.textContent='حذف القطعة';remove.addEventListener('click',()=>{row.remove();updatePartsTotal();});row.appendChild(remove);
+ [qi,pi].forEach(input=>input.addEventListener('input',updatePartsTotal));$('partsContainer').appendChild(row);updatePartsTotal();
 }
 $('addPart').addEventListener('click',()=>addPartRow());
-
+$('reportForm').addEventListener('reset',()=>{setTimeout(()=>{$('partsContainer').replaceChildren();updatePartsTotal();$('saveMessage').hidden=true;},0);});
 $('reportForm').addEventListener('submit',event=>{
-  event.preventDefault();
-  const report={
-    id:(Date.now().toString(36)+Math.random().toString(36).slice(2,8)),
-    station:$('stationName').value.trim(),
-    pump:$('pumpNumber').value,
-    fault:$('faultType').value.trim(),
-    date:$('repairDate').value,
-    cause:$('faultCause').value.trim(),
-    partsItems:Array.from(document.querySelectorAll('.part-row')).map(row=>({
-      name:row.querySelector('.part-name-input').value.trim(),
-      quantity:Number(row.querySelector('.part-quantity').value)||0,
-      price:Number(row.querySelector('.part-price').value)||0
-    })).filter(part=>part.name&&part.quantity>0),
-    partsSubtotal:updatePartsTotal().subtotal,
-    partsVat:updatePartsTotal().vat,
-    partsTotalWithVat:updatePartsTotal().totalWithVat,
-    partsTotal:updatePartsTotal().totalWithVat,
-    parts:Array.from(document.querySelectorAll('.part-row')).map(row=>row.querySelector('.part-name-input').value.trim()).filter(Boolean).join('، '),
-    action:$('repairAction').value.trim(),
-    result:$('testResult').value,
-    technician:$('technician').value.trim(),
-    notes:$('notes').value.trim(),
-    createdAt:new Date().toISOString()
-  };
-  if(!report.station||!report.fault||!report.action||!report.date){
-    setMessage('من فضلك أكمل الحقول المطلوبة التي عليها علامة *.');return;
-  }
-  reports.unshift(report);
-  if(!persistReports()){
-    reports.shift();
-    setMessage('تعذر الحفظ. قد تكون مساحة تخزين المتصفح ممتلئة أو غير متاحة.');
-    return;
-  }
-  $('reportForm').reset();
-  $('partsContainer').replaceChildren();updatePartsTotal();
-  $('repairDate').value=new Date().toLocaleDateString('en-CA');
-  setMessage('تم حفظ تقرير الصيانة بنجاح على هذا الجهاز ✅');
-  renderReports();
+ event.preventDefault();
+ const totals=updatePartsTotal();
+ const partsItems=Array.from(document.querySelectorAll('.part-row')).map(row=>({name:row.querySelector('.part-name-input').value.trim(),quantity:Number(row.querySelector('.part-quantity').value)||0,price:Number(row.querySelector('.part-price').value)||0})).filter(p=>p.name&&p.quantity>0);
+ const report={id:Date.now().toString(36)+Math.random().toString(36).slice(2,8),station:$('stationName').value.trim(),pump:$('pumpNumber').value,fault:$('faultType').value.trim(),date:$('repairDate').value,cause:$('faultCause').value.trim(),partsItems,partsSubtotal:totals.subtotal,partsVat:totals.vat,partsTotalWithVat:totals.totalWithVat,partsTotal:totals.totalWithVat,parts:partsItems.map(p=>p.name).join('، '),action:$('repairAction').value.trim(),result:$('testResult').value,technician:$('technician').value.trim(),notes:$('notes').value.trim(),createdAt:new Date().toISOString()};
+ if(!report.station||!report.fault||!report.action||!report.date){setMessage('من فضلك أكمل الحقول المطلوبة التي عليها علامة *.');return;}
+ reports.unshift(report);if(!persistReports()){reports.shift();setMessage('تعذر الحفظ. صدّر نسخة احتياطية أو تحقق من إعدادات المتصفح.');return;}
+ $('reportForm').reset();setMessage('تم حفظ تقرير الصيانة بنجاح على هذا الجهاز ✅');renderReports();
 });
-$('exportReports').addEventListener('click',()=>{
-  const blob=new Blob([JSON.stringify(reports,null,2)],{type:'application/json;charset=utf-8'});
-  const url=URL.createObjectURL(blob);
-  const link=document.createElement('a');
-  link.href=url;link.download='FuelStation3D-maintenance-reports.json';
-  document.body.appendChild(link);link.click();link.remove();URL.revokeObjectURL(url);
-});
-$('clearReports').addEventListener('click',()=>{
-  if(!reports.length){alert('لا توجد تقارير لحذفها.');return;}
-  if(!confirm('سيتم حذف جميع التقارير المحفوظة على هذا الجهاز. هل أنت متأكد؟'))return;
-  const previous=reports;reports=[];
-  if(!persistReports()){reports=previous;alert('تعذر حذف التقارير من التخزين.');return;}
-  renderReports();
-  setMessage('تم حذف التقارير من هذا الجهاز.');
-});
-loadReports();
-$('repairDate').value=new Date().toLocaleDateString('en-CA');
-draw();
+$('exportReports').addEventListener('click',()=>{const blob=new Blob([JSON.stringify(reports,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='FuelStation3D-maintenance-reports.json';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+$('clearReports').addEventListener('click',()=>{if(!reports.length){alert('لا توجد تقارير لحذفها.');return;}if(!confirm('سيتم حذف جميع التقارير المحفوظة على هذا الجهاز. هل أنت متأكد؟'))return;const previous=reports;reports=[];if(!persistReports()){reports=previous;alert('تعذر حذف التقارير من التخزين.');return;}renderReports();setMessage('تم حذف التقارير من هذا الجهاز.');});
+loadReports();$('repairDate').value=new Date().toLocaleDateString('en-CA');draw();
 </script>
 </body>
 </html>
