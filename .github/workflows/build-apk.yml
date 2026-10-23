@@ -1,3 +1,4 @@
+
 name: Build FuelStation3D APK
 
 on:
@@ -73,8 +74,8 @@ jobs:
                   applicationId 'com.fuelstation3d.app'
                   minSdk 23
                   targetSdk 28
-                  versionCode 1
-                  versionName '1.0'
+                  versionCode 2
+                  versionName '1.1'
               }
           }
           EOF
@@ -108,15 +109,47 @@ jobs:
           package com.fuelstation3d.app;
 
           import android.app.Activity;
+          import android.content.Context;
           import android.os.Bundle;
-          import android.webkit.WebView;
-          import android.webkit.WebViewClient;
+          import android.print.PrintAttributes;
+          import android.print.PrintManager;
+          import android.webkit.JavascriptInterface;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
+          import android.webkit.WebView;
+          import android.webkit.WebViewClient;
           import android.view.View;
 
           public class MainActivity extends Activity {
               private WebView webView;
+
+              private class NativePrinter {
+                  @JavascriptInterface
+                  public void print() {
+                      runOnUiThread(() -> startPrint());
+                  }
+              }
+
+              private void startPrint() {
+                  if (webView == null) return;
+
+                  PrintManager printManager =
+                      (PrintManager) getSystemService(Context.PRINT_SERVICE);
+
+                  if (printManager == null) return;
+
+                  String jobName = "FuelStation3D Maintenance Report";
+
+                  printManager.print(
+                      jobName,
+                      webView.createPrintDocumentAdapter(jobName),
+                      new PrintAttributes.Builder()
+                          .setMediaSize(PrintAttributes.MediaSize.ISO_A4)
+                          .setColorMode(PrintAttributes.COLOR_MODE_COLOR)
+                          .setMinMargins(PrintAttributes.Margins.NO_MARGINS)
+                          .build()
+                  );
+              }
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -134,27 +167,34 @@ jobs:
                   settings.setJavaScriptCanOpenWindowsAutomatically(true);
                   settings.setSupportMultipleWindows(false);
 
-                  webView.setWebViewClient(new WebViewClient());
+                  webView.addJavascriptInterface(
+                      new NativePrinter(), "NativePrinter"
+                  );
+
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public void onPageFinished(WebView view, String url) {
+                          super.onPageFinished(view, url);
+
+                          view.evaluateJavascript(
+                              "(function() {" +
+                              "window.print = function() {" +
+                              "  NativePrinter.print();" +
+                              "};" +
+                              "})();",
+                              null
+                          );
+                      }
+                  });
+
                   webView.setWebChromeClient(new WebChromeClient());
                   webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
 
                   setContentView(webView);
 
-                  if (savedInstanceState == null) {
-                      webView.loadUrl(
-                          "https://alsherifnewcapital-design.github.io/FuelStation3D/"
-                      );
-                  } else {
-                      webView.restoreState(savedInstanceState);
-                  }
-              }
-
-              @Override
-              protected void onSaveInstanceState(Bundle outState) {
-                  super.onSaveInstanceState(outState);
-                  if (webView != null) {
-                      webView.saveState(outState);
-                  }
+                  webView.loadUrl(
+                      "https://alsherifnewcapital-design.github.io/FuelStation3D/"
+                  );
               }
 
               @Override
@@ -162,13 +202,16 @@ jobs:
                   if (webView != null && webView.canGoBack()) {
                       webView.goBack();
                   } else {
-                      super.onBackPressed();
+                      webView.loadUrl(
+                          "https://alsherifnewcapital-design.github.io/FuelStation3D/"
+                      );
                   }
               }
 
               @Override
               protected void onDestroy() {
                   if (webView != null) {
+                      webView.removeJavascriptInterface("NativePrinter");
                       webView.destroy();
                       webView = null;
                   }
