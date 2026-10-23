@@ -70,48 +70,64 @@ small,.muted{color:var(--muted)}
 <body>
 <header>
   <h1>⛽ FuelStation3D</h1>
-  <p>محطتي للصيانة — محاكي وسجل صيانة محطات الوقود</p>
+  <p>محطتي للصيانة والمحاسبة — أوامر العمل والعملاء والمحطات</p>
 </header>
 <main>
   <div class="tabs" role="tablist" aria-label="أقسام التطبيق">
-    <button class="tab active" id="tabGame" type="button" role="tab" aria-selected="true">🎮 محاكاة الصيانة</button>
-    <button class="tab" id="tabRecords" type="button" role="tab" aria-selected="false">🧾 سجل الصيانة</button>
+    <button class="tab" id="tabGame" type="button" role="tab" aria-selected="false">🔧 بدء إصلاح</button>
+    <button class="tab active" id="tabRecords" type="button" role="tab" aria-selected="true">🧾 سجل أوامر الصيانة</button>
   </div>
 
-  <section id="gameSection">
+  <section id="gameSection" hidden>
     <div class="stats">
       <div class="stat">الرصيد التجريبي<strong><span id="money">2350</span> ريال</strong></div>
       <div class="stat">حالة المهمة<strong id="status">غير مكتملة</strong></div>
     </div>
-    <div id="mission">المهمة: تحرّك نحو المضخة رقم 1 ثم اضغط إصلاح.</div>
+    <div id="mission">اضغط «بدء إصلاح» لفتح أمر صيانة جديد.</div>
     <div class="panel">
-      <h2>منطقة المحطة التجريبية</h2>
+      <h2>بدء أمر صيانة جديد</h2>
       <canvas id="game" width="700" height="440" aria-label="رسم تجريبي لمحطة الوقود"></canvas>
       <div class="controls">
         <div></div><button id="up" aria-label="تحرك للأعلى">⬆️</button><div></div>
         <button id="left" aria-label="تحرك لليسار">⬅️</button><button id="down" aria-label="تحرك للأسفل">⬇️</button><button id="right" aria-label="تحرك لليمين">➡️</button>
       </div>
       <div class="actions">
-        <button id="repair" type="button">🔧 إصلاح المضخة</button>
+        <button id="repair" type="button">🔧 بدء إصلاح / فتح أمر صيانة</button>
         <button id="reset" class="secondary" type="button">إعادة اللعبة</button>
       </div>
-      <p class="muted">هذه محاكاة تعليمية بسيطة وليست تحكمًا بمضخة حقيقية.</p>
+      <p class="muted">اضغط «بدء إصلاح» لفتح أمر صيانة جديد. املأ بيانات العميل والمحطة والعطل ثم احفظ الأمر لتسجيله في السجل.</p>
     </div>
     <div class="panel">
-      <h2>تسجيل تقرير للمهمة</h2>
-      <p>بعد إكمال المهمة، افتح سجل الصيانة لتسجيل تفاصيل العمل والاختبار.</p>
-      <button type="button" id="openRecords">🧾 فتح سجل الصيانة</button>
+      <h2>إدارة الصيانة والمحاسبة</h2>
+      <p>ابدأ أمر صيانة، أضف بيانات العميل والمحطة وقطع الغيار، ثم احفظ التقرير واطبعه PDF عند الحاجة.</p>
+      <button type="button" id="openRecords">🧾 فتح أوامر الصيانة</button>
     </div>
   </section>
 
-  <section id="recordsSection" hidden>
+  <section id="recordsSection">
     <div class="panel">
       <h2>➕ تقرير صيانة جديد</h2>
       <form id="reportForm">
         <div class="grid">
           <div>
+            <label for="orderNumber">رقم أمر الصيانة (تلقائي)</label>
+            <input id="orderNumber" name="orderNumber" readonly value="سيُنشأ عند الحفظ">
+          </div>
+          <div>
+            <label for="customerName">اسم العميل / الشركة *</label>
+            <input id="customerName" name="customerName" maxlength="140" placeholder="اسم العميل أو المؤسسة" required>
+          </div>
+          <div>
+            <label for="customerPhone">جوال العميل</label>
+            <input id="customerPhone" name="customerPhone" type="tel" inputmode="tel" maxlength="30" placeholder="05xxxxxxxx">
+          </div>
+          <div>
             <label for="stationName">اسم المحطة *</label>
             <input id="stationName" name="stationName" maxlength="100" placeholder="مثال: محطة طريق الملك" required>
+          </div>
+          <div>
+            <label for="stationLocation">موقع المحطة / المدينة</label>
+            <input id="stationLocation" name="stationLocation" maxlength="180" placeholder="المدينة أو الحي أو العنوان المختصر">
           </div>
           <div>
             <label for="pumpNumber">رقم المضخة *</label>
@@ -171,14 +187,14 @@ small,.muted{color:var(--muted)}
           </div>
         </div>
         <div class="actions" style="margin-top:14px">
-          <button type="submit">💾 حفظ التقرير</button>
+          <button type="submit">💾 حفظ أمر الصيانة والتقرير</button>
           <button type="reset" class="secondary">تفريغ الحقول</button>
         </div>
       </form>
       <div id="saveMessage" class="message" role="status" aria-live="polite" hidden></div>
     </div>
     <div class="panel">
-      <h2>📚 التقارير المحفوظة</h2>
+      <h2>📚 سجل أوامر الصيانة</h2>
       <p class="muted">التقارير محفوظة في تخزين المتصفح على هذا الجهاز. امسح بيانات المتصفح أو تغيّر المتصفح قد يؤدي إلى فقدانها؛ صدّر نسخة احتياطية بانتظام.</p>
       <div class="actions">
         <button type="button" id="exportReports" class="secondary">⬇️ تصدير نسخة احتياطية</button>
@@ -240,19 +256,15 @@ function move(dx,dy){
   button.addEventListener('touchstart',e=>{e.preventDefault();move(dx,dy);},{passive:false});
 });
 $('repair').addEventListener('click',()=>{
-  if(fixed){$('mission').textContent='المهمة مكتملة بالفعل!';return;}
-  const distance=Math.hypot(player.x-pump.x,player.y-pump.y);
-  if(distance>100){$('mission').textContent='اقترب من المضخة رقم 1 أولًا!';return;}
-  fixed=true;money+=450;
-  $('money').textContent=money;
-  $('status').textContent='مكتملة ✅';
-  $('mission').textContent='أحسنت! أصلحت المضخة في المحاكاة وحصلت على 450 ريال تجريبي.';
-  draw();
+  showSection('records');
+  $('reportForm').scrollIntoView({behavior:'smooth',block:'start'});
+  $('customerName').focus({preventScroll:true});
+  setMessage('ابدأ بإدخال بيانات العميل والمحطة، ثم احفظ أمر الصيانة ليظهر في السجل.');
 });
 $('reset').addEventListener('click',()=>{
   player={x:350,y:340};money=2350;fixed=false;
   $('money').textContent=money;$('status').textContent='غير مكتملة';
-  $('mission').textContent='المهمة: تحرّك نحو المضخة رقم 1 ثم اضغط إصلاح.';
+  $('mission').textContent='اضغط «بدء إصلاح» لفتح أمر صيانة جديد.';
   draw();
 });
 
@@ -267,7 +279,7 @@ function showSection(which){
   $('tabRecords').setAttribute('aria-selected',String(!game));
   if(!game)renderReports();
 }
-$('tabGame').addEventListener('click',()=>showSection('game'));
+$('tabGame').addEventListener('click',()=>{showSection('records');$('reportForm').scrollIntoView({behavior:'smooth',block:'start'});$('customerName').focus({preventScroll:true});setMessage('ابدأ بإدخال بيانات العميل والمحطة، ثم احفظ أمر الصيانة ليظهر في السجل.');});
 $('tabRecords').addEventListener('click',()=>showSection('records'));
 $('openRecords').addEventListener('click',()=>showSection('records'));
 
@@ -279,7 +291,24 @@ function loadReports(){
     const data=localStorage.getItem(STORAGE_KEY);
     reports=data?JSON.parse(data):[];
     if(!Array.isArray(reports))reports=[];
+    let maxNo=0;
+    reports.forEach((r,i)=>{
+      const n=Number(String(r.orderNo||'').replace(/^FS-/,''));
+      if(Number.isFinite(n)&&n>maxNo)maxNo=n;
+    });
+    reports.slice().reverse().forEach(r=>{
+      if(!r.orderNo){maxNo++;r.orderNo='FS-'+String(maxNo).padStart(5,'0');}
+      if(!r.customerName)r.customerName='غير مسجل';
+      if(!r.customerPhone)r.customerPhone='';
+      if(!r.stationLocation)r.stationLocation='';
+    });
+    persistReports();
   }catch(error){reports=[];}
+}
+function nextOrderNo(){
+  let maxNo=0;
+  reports.forEach(r=>{const n=Number(String(r.orderNo||'').replace(/^FS-/,''));if(Number.isFinite(n)&&n>maxNo)maxNo=n;});
+  return 'FS-'+String(maxNo+1).padStart(5,'0');
 }
 function persistReports(){
   try{
@@ -307,6 +336,10 @@ function renderReports(){
     addText(head,'h3',(report.station||'محطة غير محددة')+' — '+(report.pump||'مضخة غير محددة'));
     const status=addText(head,'span',report.result||'لم يتم الاختبار','pill');
     card.appendChild(head);
+    addText(card,'p','رقم أمر الصيانة: '+(report.orderNo||'غير مرقم'));
+    addText(card,'p','العميل / الشركة: '+(report.customerName||'غير مسجل'));
+    addText(card,'p','جوال العميل: '+(report.customerPhone||'—'));
+    addText(card,'p','موقع المحطة: '+(report.stationLocation||'—'));
     addText(card,'p','تاريخ الصيانة: '+(report.date||'غير محدد'));
     addText(card,'p','نوع العطل: '+(report.fault||'—'));
     addText(card,'p','سبب المشكلة: '+(report.cause||'—'));
@@ -352,7 +385,10 @@ function printReport(r){
   w.document.write(`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>تقرير صيانة - ${esc(r.station)}</title><style>
   body{font-family:Arial,Tahoma,sans-serif;color:#111;margin:24px;line-height:1.7}h1,h2{text-align:center}h1{font-size:24px}h2{font-size:19px;border-bottom:1px solid #777;padding-bottom:8px}.field{margin:8px 0;overflow-wrap:anywhere}.label{font-weight:bold}table{width:100%;border-collapse:collapse;margin-top:12px}th,td{border:1px solid #777;padding:7px;text-align:right}th{background:#eee}.total{margin-top:15px;border:1px solid #aaa;padding:12px}.final{font-size:19px;font-weight:bold;margin-top:8px}@page{size:auto;margin:12mm}@media print{.no-print{display:none}}
   </style></head><body>
-  <h1>FuelStation3D | محطتي للصيانة</h1><h2>تقرير صيانة محطة وقود</h2>
+  <h1>FuelStation3D | محطتي للصيانة والمحاسبة</h1><h2>أمر صيانة رقم ${esc(r.orderNo||'—')}</h2>
+  <div class="field"><span class="label">العميل / الشركة:</span> ${esc(r.customerName)}</div>
+  <div class="field"><span class="label">جوال العميل:</span> ${esc(r.customerPhone)}</div>
+  <div class="field"><span class="label">موقع المحطة:</span> ${esc(r.stationLocation)}</div>
   <div class="field"><span class="label">اسم المحطة:</span> ${esc(r.station)}</div>
   <div class="field"><span class="label">المضخة:</span> ${esc(r.pump)}</div>
   <div class="field"><span class="label">تاريخ الصيانة:</span> ${esc(r.date)}</div>
@@ -413,6 +449,10 @@ $('reportForm').addEventListener('submit',event=>{
   event.preventDefault();
   const report={
     id:(Date.now().toString(36)+Math.random().toString(36).slice(2,8)),
+    orderNo:nextOrderNo(),
+    customerName:$('customerName').value.trim(),
+    customerPhone:$('customerPhone').value.trim(),
+    stationLocation:$('stationLocation').value.trim(),
     station:$('stationName').value.trim(),
     pump:$('pumpNumber').value,
     fault:$('faultType').value.trim(),
@@ -434,7 +474,7 @@ $('reportForm').addEventListener('submit',event=>{
     notes:$('notes').value.trim(),
     createdAt:new Date().toISOString()
   };
-  if(!report.station||!report.fault||!report.action||!report.date){
+  if(!report.customerName||!report.station||!report.fault||!report.action||!report.date){
     setMessage('من فضلك أكمل الحقول المطلوبة التي عليها علامة *.');return;
   }
   reports.unshift(report);
@@ -446,7 +486,8 @@ $('reportForm').addEventListener('submit',event=>{
   $('reportForm').reset();
   $('partsContainer').replaceChildren();updatePartsTotal();
   $('repairDate').value=new Date().toLocaleDateString('en-CA');
-  setMessage('تم حفظ تقرير الصيانة بنجاح على هذا الجهاز ✅');
+  $('orderNumber').value=nextOrderNo();
+  setMessage('تم حفظ أمر الصيانة رقم '+report.orderNo+' بنجاح على هذا الجهاز ✅');
   renderReports();
 });
 $('exportReports').addEventListener('click',()=>{
@@ -466,6 +507,7 @@ $('clearReports').addEventListener('click',()=>{
 });
 loadReports();
 $('repairDate').value=new Date().toLocaleDateString('en-CA');
+$('orderNumber').value=nextOrderNo();
 draw();
 </script>
 </body>
